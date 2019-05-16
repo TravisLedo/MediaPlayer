@@ -19,6 +19,9 @@ import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 
 import javafx.event.EventHandler;
@@ -29,6 +32,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Slider;
+import javafx.scene.effect.Bloom;
+import javafx.scene.effect.InnerShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -55,7 +61,7 @@ ListView<Song> songList = new ListView<Song>();
 //ListView<String> nameList = new ListView<String>();
 
 String path;
-int pathIndex;
+int currentSongIndex;
 
 @FXML
 String name;
@@ -66,19 +72,21 @@ int maxIndex;
 Label nameLabel;
 @FXML
 Label timeLabel;
-        
-String temp;
+    
+@FXML
+Slider volumeSlider;
 
+String temp;
 
 Duration currentTime;
 
     MediaPlayer mediaPlayer;
     FileChooser fileChooser;
-    String selectedSong;
+    Song currentSong;
     int currentSongCursor;
     boolean isPlaying;
     boolean hasSong;
-
+    double volume = 1;
     
     
 
@@ -116,40 +124,60 @@ Duration currentTime;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        imagePlay = new Image("file:PlayButton.png");
-        imageSkipRight = new Image("file:SkipRightButton.png");
-        imageSkipLeft = new Image("file:SkipLeftButton.png");
-        imageEQ = new Image("file:SampleEQ.png");
-        imageAdd = new Image("file:AddIcon.png");
-        imageSubtract = new Image("file:SubtractIcon.png");
 
-        addImage.setImage(imageAdd);
-        subtractImage.setImage(imageSubtract);
-        eqTestImage.setImage(imageEQ);
-        playButtonImage.setImage(imagePlay);
-        skipRightButtonImage.setImage(imageSkipRight);
-        skipLeftButtonImage.setImage(imageSkipLeft);
-        
-        
+
+           
+        while(isPlaying)
+        {
+            timeLabel.setText(mediaPlayer.getCurrentTime().toString());
+        }
+
+
+
               isPlaying = false;
              // nameList.setPlaceholder(new Label("No content"));
               nameLabel.setText("Happy Jam'n!");
               
-/*
-    songList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+              
+              
+              
+              //double clickinga  song on the list plays the song
+      songList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
     @Override
-    public void handle(MouseEvent event) {
-        if(event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 &&
-           (event.getTarget() instanceof LabeledText || ((GridPane) event.getTarget()).getChildren().size() > 0)) {
+    public void handle(MouseEvent click) {
 
-           //your code here       
-            System.out.println("clicked.");
-
-         }    
+        if (click.getClickCount() == 2) {
+           Song selectedFromList = songList.getSelectionModel().getSelectedItem(); //get highlighted list item
+                play(selectedFromList.getName(),selectedFromList.getPath());
+                                currentSongIndex = songList.getSelectionModel().getSelectedIndex();
+          }
     }
 });
-              */
+    
+    
               
+              
+              
+              //change volume when slider is moved
+volumeSlider.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
+                
+                try{
+                ChangeVolume((double) arg0.getValue());
+                }
+                catch(Exception e) {
+                }
+
+            }
+        });
+              
+              
+           volumeSlider.setValue(volume*100); //set initial volume to max
+        
+    
     }    
 
 
@@ -159,8 +187,7 @@ Duration currentTime;
     
     
     @FXML
-    private void playButton(ActionEvent event) {
-        System.out.println("Clicked");
+    private void playButton() {
            Song selectedFromList;
 
         if(songList.getItems().isEmpty())
@@ -195,23 +222,32 @@ Duration currentTime;
     
     private void play(String name, String path)
     {
+         currentSongIndex = songList.getSelectionModel().getSelectedIndex();
+
+         System.out.println(currentSongIndex);
 
         Media song = new Media(new File(path).toURI().toString());
         mediaPlayer = new MediaPlayer(song);
         mediaPlayer.play();
         
-        imagePlay = new Image("file:PauseButton.png"); //change to pause image while playing
+        imagePlay = new Image("file:src/musicplayer/images/PauseButton.png"); //change to pause image while playing
         playButtonImage.setImage(imagePlay);
 
         nameLabel.setText(name);
         isPlaying = true;
         hasSong = true;
+         
+         
+        
+         
+         
+         
     }
     
     
     private void pause()
     {
-        imagePlay = new Image("file:PlayButton.png");
+        imagePlay = new Image("file:src/musicplayer/images/PlayButton.png");
         playButtonImage.setImage(imagePlay);
         mediaPlayer.pause();
         isPlaying = false;
@@ -225,25 +261,35 @@ Duration currentTime;
     {
       mediaPlayer.setStartTime(currentTime);  
       mediaPlayer.play();
-    imagePlay = new Image("file:PauseButton.png");
+    imagePlay = new Image("file:src/musicplayer/images/PauseButton.png");
     playButtonImage.setImage(imagePlay);
     isPlaying = true;
 
     }
-    
-    
-    private void stop()
-    {
 
-    
-    }
-    
     
     @FXML
     private void playNext()
     {  
-                      
-                      
+
+        mediaPlayer.stop();
+        
+        
+     currentSongIndex ++;
+     
+     int numberOfSongs = songList.getItems().size();
+     
+     if(currentSongIndex<numberOfSongs){
+  
+     songList.getSelectionModel().select(currentSongIndex);
+     play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
+     }
+     else{
+         currentSongIndex = 0;
+          songList.getSelectionModel().selectFirst();
+          play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
+
+     }
     
     }
     
@@ -254,7 +300,26 @@ Duration currentTime;
     @FXML
     private void playPrevious()
     {  
-         
+       
+      mediaPlayer.stop();
+        
+        
+     currentSongIndex --;
+     
+     int numberOfSongs = songList.getItems().size();
+     
+     if(currentSongIndex==0){
+  
+     songList.getSelectionModel().select(currentSongIndex);
+     play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
+     }
+     else{
+         currentSongIndex = numberOfSongs;
+          songList.getSelectionModel().selectLast();
+          play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
+
+     }
+     
     }
 
     
@@ -269,7 +334,7 @@ Duration currentTime;
     private void addSongs(ActionEvent event){
                 fileChooser = new FileChooser();
                 fileChooser.setTitle("Add Songs");
-                FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select a Song (*.mp3)", "*.mp3");
+                FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select a Song", "*.mp3", "*.wav");
                 fileChooser.getExtensionFilters().add(filter);
                 List<File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
                 
@@ -284,10 +349,7 @@ Duration currentTime;
                    //   nameList.getItems().add(selectedSong.getName());
                       songList.getItems().add(selectedSong);
                       
-                     
-                      System.out.println(""+selectedSong.getName());
-                      System.out.println(""+selectedSong.getPath());
-                      
+                    
                       
                     nameLabel.setText("Time to Rock Out!");
                     maxIndex = maxIndex+1;
@@ -338,17 +400,23 @@ if (result.get() == ButtonType.OK){
 
 
 
+    
+    
+    
+        @FXML
+    private void ChangeVolume(double volume)
+    {  
 
-
-
-
-
-
-
-
-
-
-
-
+        this.volume = volume/100;
+        mediaPlayer.setVolume(this.volume);
+        
+        System.out.println("new volume: " + this.volume);
+    }
+    
+    
+    
+    
+    
+    
     
 }
