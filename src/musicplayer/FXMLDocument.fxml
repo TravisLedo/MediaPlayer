@@ -57,12 +57,12 @@
       </VBox>
       <VBox layoutX="61.0" layoutY="253.0" prefHeight="17.0" prefWidth="299.0">
          <children>
-            <Slider />
+            <Slider fx:id="durationSlider" />
          </children>
       </VBox>
       <VBox alignment="TOP_CENTER" layoutX="84.0" layoutY="186.0" prefHeight="17.0" prefWidth="257.0">
          <children>
-            <Label fx:id="timeLabel" text="00:00" />
+            <Label fx:id="timeLabel" text="00:00:00" />
          </children>
       </VBox>
       <HBox layoutX="16.0" layoutY="587.0" prefHeight="37.0" prefWidth="86.0">

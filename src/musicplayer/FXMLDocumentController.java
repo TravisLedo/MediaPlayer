@@ -19,6 +19,7 @@ import java.util.ResourceBundle;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -45,6 +46,8 @@ import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import static javafx.util.Duration.millis;
+import javax.swing.event.ChangeEvent;
+import java.nio.file.Paths;
 
 /**
  *
@@ -76,9 +79,24 @@ Label timeLabel;
 @FXML
 Slider volumeSlider;
 
+@FXML
+Slider durationSlider;
+
+
 String temp;
 
 Duration currentTime;
+double maxTime;
+
+
+      int totalFrames;
+      long timeInMillis;
+
+
+
+
+
+
 
     MediaPlayer mediaPlayer;
     FileChooser fileChooser;
@@ -117,15 +135,15 @@ Duration currentTime;
     Image imageEQ;
 
 
-    
+    boolean seeking; //to stop the slider from moving when user is trying to move it
 
     
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-
-
+        
+        
            
         while(isPlaying)
         {
@@ -175,9 +193,17 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
         });
               
               
+
+
+
+
+
            volumeSlider.setValue(volume*100); //set initial volume to max
         
     
+
+ 
+
     }    
 
 
@@ -224,10 +250,20 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     {
          currentSongIndex = songList.getSelectionModel().getSelectedIndex();
 
-         System.out.println(currentSongIndex);
+       //  System.out.println(currentSongIndex);
 
         Media song = new Media(new File(path).toURI().toString());
+        
+
         mediaPlayer = new MediaPlayer(song);
+        
+
+        
+            mediaPlayer.setOnReady(new Runnable() { //run everything here once media is finished loading
+
+           @Override
+        public void run() {
+
         mediaPlayer.play();
         
         imagePlay = new Image("file:src/musicplayer/images/PauseButton.png"); //change to pause image while playing
@@ -237,12 +273,70 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
         isPlaying = true;
         hasSong = true;
          
+        maxTime = song.getDuration().toSeconds();
+        currentTime = mediaPlayer.getCurrentTime();
          
+        durationSlider.setMax(maxTime); //set slider to be porportional to the duration of the song
+                   
+        System.out.println(maxTime);
         
-         
-         
-         
+        
+        //make the slider move with the duration
+    mediaPlayer.currentTimeProperty().addListener((ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) -> {
+        
+                if(!seeking){ //only move the slider automatically when the user is not clicking on it.
+                durationSlider.setValue(newValue.toSeconds());
+                }
+                
+                
+                               
+
+                timeLabel.textProperty().set("" + formatDuration(newValue));
+                
+                
+                
+    });
+    
+    
+    
+    
+    
+               //when mouse is down, stop the slider from moving.
+               durationSlider.setOnMousePressed((MouseEvent mouseEvent) -> {
+
+                   seeking = true;
+                                      
+
+
+        
+    });
+               
+               
+               
+               //Let the slider move freely again and play the song at the new slider position that the player moved it.
+               durationSlider.setOnMouseReleased((MouseEvent mouseEvent) -> {
+
+                  seeking = false;
+
+        mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
+
+        
+    });
+          
+
+
+
+        }//end run function
+        
+        
+        
+    }); //end runnable check
+            
+            
     }
+            
+            
+     
     
     
     private void pause()
@@ -410,12 +504,25 @@ if (result.get() == ButtonType.OK){
         this.volume = volume/100;
         mediaPlayer.setVolume(this.volume);
         
-        System.out.println("new volume: " + this.volume);
+        //System.out.println("new volume: " + this.volume);
     }
     
     
     
     
+    
+    
+    
+    public static String formatDuration(Duration duration) {
+    long seconds = (long)duration.toSeconds();
+    long absSeconds = Math.abs(seconds);
+    String positive = String.format(
+        "%02d:%02d:%02d",
+        absSeconds / 3600,
+        (absSeconds % 3600) / 60,
+        absSeconds % 60);
+    return seconds < 0 ? "-" + positive : positive;
+}
     
     
     
