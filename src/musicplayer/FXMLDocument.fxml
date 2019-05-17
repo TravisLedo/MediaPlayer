@@ -100,12 +100,12 @@
       </VBox>
       <VBox layoutX="25.0" layoutY="208.0" prefHeight="37.0" prefWidth="60.0">
          <children>
-            <CheckBox mnemonicParsing="false" prefHeight="15.0" prefWidth="62.0" text="Shuffle">
+            <CheckBox fx:id="shuffleCheckbox" mnemonicParsing="false" prefHeight="15.0" prefWidth="62.0" text="Shuffle">
                <font>
                   <Font size="10.0" />
                </font>
             </CheckBox>
-            <CheckBox mnemonicParsing="false" prefHeight="15.0" prefWidth="59.0" text="Repeat">
+            <CheckBox fx:id="repeatCheckbox" mnemonicParsing="false" prefHeight="15.0" prefWidth="59.0" text="Repeat">
                <font>
                   <Font size="10.0" />
                </font>

@@ -48,6 +48,8 @@ import javafx.util.Duration;
 import static javafx.util.Duration.millis;
 import javax.swing.event.ChangeEvent;
 import java.nio.file.Paths;
+import java.util.Random;
+import javafx.scene.control.CheckBox;
 
 /**
  *
@@ -82,6 +84,14 @@ Slider volumeSlider;
 @FXML
 Slider durationSlider;
 
+@FXML
+CheckBox shuffleCheckbox;
+
+@FXML
+CheckBox repeatCheckbox;
+
+
+
 
 String temp;
 
@@ -93,6 +103,7 @@ double maxTime;
       long timeInMillis;
 
 
+        Duration previousTime;
 
 
 
@@ -107,6 +118,8 @@ double maxTime;
     double volume = 1;
     
     
+    boolean isShuffled;
+    boolean isRepeat;
 
     
     
@@ -192,17 +205,56 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
             }
         });
               
-              
-
-
-
-
-
            volumeSlider.setValue(volume*100); //set initial volume to max
         
     
 
  
+           
+           
+           //Shuffle check box initialize and listen
+           shuffleCheckbox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+            if(newValue){
+
+                isShuffled = true;
+
+            }else{
+
+              isShuffled = false;
+
+            }
+        }
+    });
+           
+           
+           
+           
+           
+           //Repeat check box initialize and listen
+           repeatCheckbox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+            if(newValue){
+
+                isRepeat = true;
+            shuffleCheckbox.setDisable(true);
+            }else{
+
+              isRepeat = false;
+            shuffleCheckbox.setDisable(false);
+
+            }
+        }
+    });
+
+           
+           
+           
+           
 
     }    
 
@@ -278,24 +330,61 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
          
         durationSlider.setMax(maxTime); //set slider to be porportional to the duration of the song
                    
-        System.out.println(maxTime);
+       // System.out.println(maxTime);
         
         
         //make the slider move with the duration
     mediaPlayer.currentTimeProperty().addListener((ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) -> {
         
+        
                 if(!seeking){ //only move the slider automatically when the user is not clicking on it.
                 durationSlider.setValue(newValue.toSeconds());
+                
+        
                 }
                 
-                
-                               
-
+               
                 timeLabel.textProperty().set("" + formatDuration(newValue));
                 
                 
                 
     });
+    
+    
+    
+    
+    
+                 //Check for song ended and play next
+                   mediaPlayer.setOnEndOfMedia(() -> {
+                       
+                       if(isRepeat)
+                       {
+                         mediaPlayer.stop();
+                       mediaPlayer.seek(Duration.seconds(0));
+                         mediaPlayer.play();
+
+                       }
+                       else{
+                             //if shuffle is on
+                       if(isShuffled)
+                       {
+                       playRandom();
+  
+                       }
+                       else{
+                       playNext();
+
+                       }
+                       }
+                       
+                     
+                       
+                      });
+    
+    
+    
+    
+    
     
     
     
@@ -395,25 +484,41 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     private void playPrevious()
     {  
        
-      mediaPlayer.stop();
         
         
-     currentSongIndex --;
+      
+      //If clicked back twice, go previous. Otherqwise restart song.
+      if(mediaPlayer.getCurrentTime().toSeconds()<.5)
+      {
+
+       mediaPlayer.stop();
+
+      
+
+          int numberOfSongs = songList.getItems().size();
+
+     if(currentSongIndex!=0){ //if at the beginning of playlist, go to last song
+       currentSongIndex --;
      
-     int numberOfSongs = songList.getItems().size();
-     
-     if(currentSongIndex==0){
-  
      songList.getSelectionModel().select(currentSongIndex);
      play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
      }
-     else{
+     else{ //if not at beginning of playlist, go back one song
          currentSongIndex = numberOfSongs;
           songList.getSelectionModel().selectLast();
           play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
 
      }
-     
+      
+      }
+      else //didnt click twice, only restart song
+      {
+             mediaPlayer.stop();
+                 mediaPlayer.seek(Duration.seconds(0));
+             mediaPlayer.play();
+
+      }
+      
     }
 
     
@@ -421,6 +526,36 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
 
 
         
+    
+    
+    
+    @FXML
+    private void playRandom()
+    {  
+
+      mediaPlayer.stop();
+        
+      
+           int numberOfSongs = songList.getItems().size();
+
+           
+            int random = (int)(Math.random() * numberOfSongs);
+
+      
+      
+     currentSongIndex = random;
+     
+  
+     songList.getSelectionModel().select(currentSongIndex);
+     play(songList.getSelectionModel().getSelectedItem().getName(),songList.getSelectionModel().getSelectedItem().getPath());
+
+    
+    }
+    
+    
+    
+    
+    
         
     
     
@@ -512,7 +647,7 @@ if (result.get() == ButtonType.OK){
     
     
     
-    
+    //format time
     public static String formatDuration(Duration duration) {
     long seconds = (long)duration.toSeconds();
     long absSeconds = Math.abs(seconds);
