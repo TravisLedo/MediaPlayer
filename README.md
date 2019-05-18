@@ -1,7 +1,7 @@
 Under construction
 # MusicPlayer
 
-A simple media player that plays mp3 and wav files. Inspired by Winamp with a more modern GUI.
+A simple media player that plays mp3 and wav files. Inspired by Winamp with a modern twist.
 
 ## Getting Started
 
@@ -33,8 +33,7 @@ A simple media player that plays mp3 and wav files. Inspired by Winamp with a mo
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
+...
 ## Acknowledgments
 
 * Hat tip to anyone whose code was used
