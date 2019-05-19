@@ -11,6 +11,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -35,7 +38,12 @@ import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import javafx.scene.control.CheckBox;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.StackPane;
 import javafx.scene.media.MediaView;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -77,14 +85,14 @@ CheckBox repeatCheckbox;
 
 
 
-
+boolean isFullscreen;
 
 Duration currentTime;
 double maxTime;
 
 
 
-
+MediaView mediaView;
     MediaPlayer mediaPlayer;
     FileChooser fileChooser;
     boolean isPlaying;
@@ -404,8 +412,6 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
                            
                    seeking = true;
                                       
-
-
         
     });
                
@@ -420,7 +426,6 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
 
                   seeking = false;
 
-      // mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
 
         
     });
@@ -455,6 +460,15 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
         
     private void resume()
     {
+                String fileType = mediaPlayer.getMedia().getSource();
+        fileType = fileType.substring(fileType.lastIndexOf(".") + 1);
+        
+                if(fileType.equals("mp4"))
+        {
+        StartVideo();
+
+        }
+                
       mediaPlayer.seek(currentTime);  
       mediaPlayer.play();
     imagePlay = new Image("file:src/musicplayer/images/PauseButton.png");
@@ -668,40 +682,96 @@ if (result.get() == ButtonType.OK){
     
     
     
-            @FXML
+      @FXML
       public void StartVideo(){
 
         //If there is no video window
         if(!videoOpened)
         {
-            System.out.println("video stage already open");
           mediaPlayer.stop();
 
          videoStage = new Stage();
            videoOpened = true;
            
                   //Instantiating MediaView class   
-        MediaView mediaView = new MediaView(mediaPlayer);  
+        mediaView = new MediaView(mediaPlayer);  
           
-          
+
+      mediaView.setPreserveRatio(true);
+
+        
         //setting group and scene   
-        Group root = new Group();  
-        root.getChildren().add(mediaView);  
+          StackPane root = new StackPane();
+         root.getChildren().add(mediaView);
         Scene scene = new Scene(root,500,400);  
+        
+        
+        
+            DoubleProperty width = mediaView.fitWidthProperty();
+    DoubleProperty height = mediaView.fitHeightProperty();
+    
+    width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
+    height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));  
+        
+    
+    
+        //set background to black. need both pane and scene set as black
+        scene.setFill(Color.BLACK);
+        root.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0), CornerRadii.EMPTY, Insets.EMPTY)));
+        
+
+    
+
+    
         videoStage.setScene(scene);  
         videoStage.setTitle("Playing video");  
         videoStage.show();  
-        
-        
+
         }
         else
         {
-           System.out.println("video stage not opened yet");
 
         }
     
-          
- 
+        if(isFullscreen){
+            videoStage.setFullScreen(true); //if last video was fulscreen, make this one fullscreen too
+        }
+
+        
+        
+                      //double clickinga  goes fullscreen
+      mediaView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+    @Override
+    public void handle(MouseEvent click) {
+
+        if (click.getClickCount() == 2) {
+            try{
+                if(isFullscreen){
+                videoStage.setFullScreen(false);
+
+                isFullscreen = false;
+                }
+                else
+                {
+                videoStage.setFullScreen(true);
+
+                isFullscreen = true;
+
+                }
+
+            }
+            catch(Exception e)
+              {
+                  
+              }
+
+          }
+    }
+});
+        
+        
+        
         
         
  videoStage.setOnCloseRequest((WindowEvent event1) -> {
@@ -709,9 +779,9 @@ if (result.get() == ButtonType.OK){
            imagePlay = new Image("file:src/musicplayer/images/PlayButton.png"); //change to pause image while playing
         playButtonImage.setImage(imagePlay);       
         isPlaying = false;
-                   videoOpened = false;
-
-                 mediaPlayer.seek(mediaPlayer.getStartTime());
+         videoOpened = false;
+         isFullscreen = false;
+         mediaPlayer.seek(mediaPlayer.getStartTime());
     });
  
  
