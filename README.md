@@ -32,10 +32,6 @@ A simple media player that plays mp3 and wav files. Inspired by Winamp with a mo
 
 
 ## License
-
 ...
 ## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+...
