@@ -28,7 +28,7 @@ A simple media player that plays mp3 and wav files. Inspired by Winamp with a mo
 
 ## Authors
 
-* **Travis Ledo(https://travisledo.github.io)** - *Initial work* - [MusicPlayer](https://github.com/TravisLedo)
+* **[Travis Ledo](https://travisledo.github.io)** - *Initial work* - [MusicPlayer](https://github.com/TravisLedo)
 
 
 ## License
