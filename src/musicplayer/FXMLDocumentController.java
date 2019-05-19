@@ -5,51 +5,39 @@
  */
 package musicplayer;
 
-import com.sun.javafx.scene.control.skin.LabeledText;
 import java.io.File;
 import java.net.URL;
-import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.beans.InvalidationListener;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
-import javafx.scene.effect.Bloom;
-import javafx.scene.effect.InnerShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
-import static javafx.util.Duration.millis;
-import javax.swing.event.ChangeEvent;
-import java.nio.file.Paths;
-import java.util.Random;
 import javafx.scene.control.CheckBox;
+import javafx.scene.media.MediaView;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -60,12 +48,9 @@ public class FXMLDocumentController implements Initializable {
 @FXML
 ListView<Song> songList = new ListView<Song>();
 
+Stage videoStage;
 
 
-//@FXML
-//ListView<String> nameList = new ListView<String>();
-
-String path;
 int currentSongIndex;
 
 @FXML
@@ -93,26 +78,15 @@ CheckBox repeatCheckbox;
 
 
 
-String temp;
 
 Duration currentTime;
 double maxTime;
-
-
-      int totalFrames;
-      long timeInMillis;
-
-
-        Duration previousTime;
-
 
 
 
 
     MediaPlayer mediaPlayer;
     FileChooser fileChooser;
-    Song currentSong;
-    int currentSongCursor;
     boolean isPlaying;
     boolean hasSong;
     double volume = 1;
@@ -121,7 +95,7 @@ double maxTime;
     boolean isShuffled;
     boolean isRepeat;
 
-    
+    boolean videoOpened;
     
     @FXML
     ImageView playButtonImage;
@@ -135,17 +109,14 @@ double maxTime;
     ImageView skipLeftButtonImage;
     Image imageSkipLeft;
     
-        @FXML
+    @FXML
     ImageView addImage;
     Image imageAdd;
     
-        @FXML
+    @FXML
     ImageView subtractImage;
     Image imageSubtract;
     
-    @FXML
-    ImageView eqTestImage;
-    Image imageEQ;
 
 
     boolean seeking; //to stop the slider from moving when user is trying to move it
@@ -155,9 +126,7 @@ double maxTime;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        
-        
-           
+                   
         while(isPlaying)
         {
             timeLabel.setText(mediaPlayer.getCurrentTime().toString());
@@ -180,6 +149,15 @@ double maxTime;
     public void handle(MouseEvent click) {
 
         if (click.getClickCount() == 2) {
+            try{
+                videoOpened = false;
+                videoStage.close();
+                mediaPlayer.stop();
+            }
+            catch(Exception e)
+              {
+              }
+
            Song selectedFromList = songList.getSelectionModel().getSelectedItem(); //get highlighted list item
                 play(selectedFromList.getName(),selectedFromList.getPath());
                                 currentSongIndex = songList.getSelectionModel().getSelectedIndex();
@@ -252,16 +230,10 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     });
 
            
-           
-           
-           
 
     }    
 
 
-
-    
-    
     
     
     @FXML
@@ -300,22 +272,36 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     
     private void play(String name, String path)
     {
+
+
          currentSongIndex = songList.getSelectionModel().getSelectedIndex();
 
        //  System.out.println(currentSongIndex);
 
         Media song = new Media(new File(path).toURI().toString());
         
+        
 
         mediaPlayer = new MediaPlayer(song);
         
-
         
             mediaPlayer.setOnReady(new Runnable() { //run everything here once media is finished loading
 
            @Override
         public void run() {
 
+            
+            
+        String fileType = mediaPlayer.getMedia().getSource();
+        fileType = fileType.substring(fileType.lastIndexOf(".") + 1);
+        
+        if(fileType.equals("mp4"))
+        {
+        StartVideo();
+
+        }
+            
+            
         mediaPlayer.play();
         
         imagePlay = new Image("file:src/musicplayer/images/PauseButton.png"); //change to pause image while playing
@@ -368,10 +354,13 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
                              //if shuffle is on
                        if(isShuffled)
                        {
+                       mediaPlayer.stop();
+
                        playRandom();
   
                        }
                        else{
+                      mediaPlayer.stop();
                        playNext();
 
                        }
@@ -392,7 +381,27 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     
                //when mouse is down, stop the slider from moving.
                durationSlider.setOnMousePressed((MouseEvent mouseEvent) -> {
+                   
+                    pause();
+                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
+                           currentTime = mediaPlayer.getCurrentTime();
+                           
+                   seeking = true;
+                                      
 
+
+        
+    });
+               
+               
+               
+                //dragged
+               durationSlider.setOnMouseDragged((MouseEvent mouseEvent) -> {
+                   
+                    pause();
+                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
+                           currentTime = mediaPlayer.getCurrentTime();
+                           
                    seeking = true;
                                       
 
@@ -404,10 +413,14 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
                
                //Let the slider move freely again and play the song at the new slider position that the player moved it.
                durationSlider.setOnMouseReleased((MouseEvent mouseEvent) -> {
+                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
+                   currentTime = mediaPlayer.getCurrentTime();
+
+                   resume();
 
                   seeking = false;
 
-        mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
+      // mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
 
         
     });
@@ -442,7 +455,7 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
         
     private void resume()
     {
-      mediaPlayer.setStartTime(currentTime);  
+      mediaPlayer.seek(currentTime);  
       mediaPlayer.play();
     imagePlay = new Image("file:src/musicplayer/images/PauseButton.png");
     playButtonImage.setImage(imagePlay);
@@ -451,10 +464,12 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     }
 
     
+    
     @FXML
     private void playNext()
     {  
-
+        videoOpened = false;
+        videoStage.close();
         mediaPlayer.stop();
         
         
@@ -490,7 +505,8 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
       //If clicked back twice, go previous. Otherqwise restart song.
       if(mediaPlayer.getCurrentTime().toSeconds()<.5)
       {
-
+                  videoOpened = false;
+                videoStage.close();
        mediaPlayer.stop();
 
       
@@ -513,8 +529,8 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
       }
       else //didnt click twice, only restart song
       {
-             mediaPlayer.stop();
-                 mediaPlayer.seek(Duration.seconds(0));
+
+                 mediaPlayer.seek(mediaPlayer.getStartTime());
              mediaPlayer.play();
 
       }
@@ -533,6 +549,8 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     private void playRandom()
     {  
 
+                videoOpened = false;
+        videoStage.close();
       mediaPlayer.stop();
         
       
@@ -563,7 +581,7 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     private void addSongs(ActionEvent event){
                 fileChooser = new FileChooser();
                 fileChooser.setTitle("Add Songs");
-                FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select a Song", "*.mp3", "*.wav");
+                FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select a Song", "*.mp3", "*.wav", "*.mp4");
                 fileChooser.getExtensionFilters().add(filter);
                 List<File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
                 
@@ -641,6 +659,68 @@ if (result.get() == ButtonType.OK){
         
         //System.out.println("new volume: " + this.volume);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            @FXML
+      public void StartVideo(){
+
+        //If there is no video window
+        if(!videoOpened)
+        {
+            System.out.println("video stage already open");
+          mediaPlayer.stop();
+
+         videoStage = new Stage();
+           videoOpened = true;
+           
+                  //Instantiating MediaView class   
+        MediaView mediaView = new MediaView(mediaPlayer);  
+          
+          
+        //setting group and scene   
+        Group root = new Group();  
+        root.getChildren().add(mediaView);  
+        Scene scene = new Scene(root,500,400);  
+        videoStage.setScene(scene);  
+        videoStage.setTitle("Playing video");  
+        videoStage.show();  
+        
+        
+        }
+        else
+        {
+           System.out.println("video stage not opened yet");
+
+        }
+    
+          
+ 
+        
+        
+ videoStage.setOnCloseRequest((WindowEvent event1) -> {
+         mediaPlayer.stop();
+           imagePlay = new Image("file:src/musicplayer/images/PlayButton.png"); //change to pause image while playing
+        playButtonImage.setImage(imagePlay);       
+        isPlaying = false;
+                   videoOpened = false;
+
+                 mediaPlayer.seek(mediaPlayer.getStartTime());
+    });
+ 
+ 
+  
+        
+    }
+    
+    
+    
     
     
     

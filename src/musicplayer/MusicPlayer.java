@@ -36,6 +36,7 @@ public class MusicPlayer extends Application {
         scene.getStylesheets().add("/musicplayer/style.css");
         stage.setScene(scene);
         stage.show();
+        stage.setResizable(false);
 
     }
 
