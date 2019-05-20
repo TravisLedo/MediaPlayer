@@ -32,6 +32,5 @@ A media player that plays audio and video files. Inspired by Winamp with a moder
 
 
 ## License
-...
-## Acknowledgments
-...
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
