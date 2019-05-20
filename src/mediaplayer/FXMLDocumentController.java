@@ -328,19 +328,23 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
         
         
         //make the slider move with the duration
-    mediaPlayer.currentTimeProperty().addListener((ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) -> {
+         mediaPlayer.currentTimeProperty().addListener((ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) -> {
         
         
-                if(!seeking){ //only move the slider automatically when the user is not clicking on it.
-                durationSlider.setValue(newValue.toSeconds());
-                
-        
-                }
-                
-               
-                timeLabel.textProperty().set("" + formatDuration(newValue));
-                
-                
+        if(!seeking){ //only move the slider automatically when the user is not clicking on it.
+        durationSlider.setValue(newValue.toSeconds());
+
+
+        }
+
+
+        timeLabel.textProperty().set("" + formatDuration(newValue));
+
+          try{
+        ChangeVolume((double) volumeSlider.getValue());
+        }
+        catch(Exception e) {
+        }
                 
     });
     
@@ -471,7 +475,7 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
                 
       mediaPlayer.seek(currentTime);  
       mediaPlayer.play();
-    imagePlay = new Image("file:src/musicplayer/images/PauseButton.png");
+    imagePlay = new Image("file:src/mediaplayer/images/PauseButton.png");
     playButtonImage.setImage(imagePlay);
     isPlaying = true;
 
@@ -775,7 +779,7 @@ if (result.get() == ButtonType.OK){
         // When closing the video screen, stop player
  videoStage.setOnCloseRequest((WindowEvent event1) -> {
          mediaPlayer.stop();
-           imagePlay = new Image("file:src/musicplayer/images/PlayButton.png"); //change to pause image while playing
+           imagePlay = new Image("file:src/mediaplayer/images/PlayButton.png"); //change to pause image while playing
         playButtonImage.setImage(imagePlay);       
         isPlaying = false;
          videoOpened = false;
