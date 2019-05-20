@@ -1,25 +1,12 @@
-Under construction
 # MediaPlayer
 
-A media player that plays audio and video files. Inspired by Winamp with a modern twist.
+An application that plays audio and video files.
 
-## Getting Started
-
-...
 
 ### Prerequisites
 
 * [Java](https://www.java.com) - Java Runtime Environment
 
-
-### Installing
-
-...
-
-
-## Deployment
-
-...
 
 ## Built With
 
