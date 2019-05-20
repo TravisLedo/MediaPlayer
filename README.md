@@ -1,7 +1,7 @@
 Under construction
 # MediaPlayer
 
-A simple media player that plays audio and video files. Inspired by Winamp with a modern twist.
+A media player that plays audio and video files. Inspired by Winamp with a modern twist.
 
 ## Getting Started
 
