@@ -22,7 +22,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -90,7 +89,7 @@ boolean isFullscreen;
 Duration currentTime;
 double maxTime;
 
-
+boolean canBrowse = true; //use this so the user cannot click add twice.
 
 MediaView mediaView;
     MediaPlayer mediaPlayer;
@@ -597,6 +596,9 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     
     @FXML
     private void addSongs(ActionEvent event){
+        
+        if(canBrowse){
+                canBrowse = false;
                 fileChooser = new FileChooser();
                 fileChooser.setTitle("Add Songs");
                 FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select a Song", "*.mp3", "*.wav", "*.mp4");
@@ -618,16 +620,18 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
                       
                     nameLabel.setText("Time to Rock Out!");
                     maxIndex = maxIndex+1;
+                canBrowse = true;
 
                     }
                 }
                 else
                 {
                  System.out.println("Cancel.");
+                canBrowse = true;
 
                 }
                                                 
-
+        }
     }
     
         @FXML
@@ -649,8 +653,10 @@ alert.setHeaderText("Are you sure you want to remove this song?");
 
 Optional<ButtonType> result = alert.showAndWait();
 if (result.get() == ButtonType.OK){
-               // currentSongCursor = nameList.getSelectionModel().getSelectedIndex();
-          //  nameList.getItems().remove(nameIndex);
+    
+             Song selectedFromList = songList.getSelectionModel().getSelectedItem(); //get highlighted list item
+
+            songList.getItems().remove(selectedFromList);
             nameIndex = nameIndex-1;
            
             maxIndex = maxIndex-1;
