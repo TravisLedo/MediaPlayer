@@ -648,7 +648,7 @@ volumeSlider.valueProperty().addListener(new ChangeListener() {
     {
 Alert alert = new Alert(AlertType.CONFIRMATION);
 alert.setTitle("Remove Song");
-alert.setHeaderText("Are you sure you want to remove this song?");
+alert.setHeaderText("Are you sure you want to remove this file?");
 //alert.setContentText("Are you ok with this?");
 
 Optional<ButtonType> result = alert.showAndWait();
