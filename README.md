@@ -3,6 +3,11 @@
 An application that plays audio and video files.
 
 
+# ScreenShots
+
+![Media Player default window](/Screenshots/mediaplayer1.png?raw=true "Media Player default window")
+
+
 ### Prerequisites
 
 * [Java](https://www.java.com) - Java Runtime Environment
