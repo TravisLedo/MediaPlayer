@@ -19,10 +19,6 @@ An application that plays audio and video files.
 * **[Travis Ledo](https://travisledo.github.io)** - *Initial work* - [MusicPlayer](https://github.com/TravisLedo)
 
 
-## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-
 # ScreenShots
 
 ![Media Player default window](/Screenshots/mediaplayer1.png?raw=true "Media Player default window")
