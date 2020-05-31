@@ -32,7 +32,7 @@ public class MediaPlayer extends Application {
       
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
         Scene scene = new Scene(root);
-        scene.getStylesheets().add("/musicplayer/style.css");
+        scene.getStylesheets().add("/mediaplayer/style.css");
         stage.setScene(scene);
         stage.show();
         stage.setResizable(false);
