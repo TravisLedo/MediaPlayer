@@ -37,7 +37,8 @@ public class MediaPlayer extends Application {
         stage.show();
         stage.setResizable(false);
         
-        
+        System.out.println(System.getProperties().get("javafx.runtime.version"));
+
         
         stage.setOnCloseRequest((WindowEvent event1) -> {
                 System.exit(0); //close every window that comes with app.
